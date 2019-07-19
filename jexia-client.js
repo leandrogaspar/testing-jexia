@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+const fetch = require("node-fetch");
 
 function error(code, message) {
   return { code, message };
@@ -14,8 +14,8 @@ class JexiaClient {
   async signUp(signUpInfo) {
     const requestBody = JSON.stringify(signUpInfo);
 
-    const response = await fetch(this.projectUrl + '/ums/signup', {
-      method: 'POST',
+    const response = await fetch(this.projectUrl + "/ums/signup", {
+      method: "POST",
       body: requestBody
     });
 
@@ -29,8 +29,8 @@ class JexiaClient {
   async signIn(signInInfo) {
     const requestBody = JSON.stringify(signInInfo);
 
-    const response = await fetch(this.projectUrl + '/auth', {
-      method: 'POST',
+    const response = await fetch(this.projectUrl + "/auth", {
+      method: "POST",
       body: requestBody
     });
 
@@ -39,6 +39,65 @@ class JexiaClient {
     }
 
     this.auth = await response.json();
+  }
+
+  async createRecords(dataset, records) {
+    const requestBody = JSON.stringify(records);
+
+    const response = await fetch(this.projectUrl + `/ds/${dataset}`, {
+      method: "POST",
+      body: requestBody,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.auth.access_token}`
+      }
+    });
+
+    if (!response.ok) {
+      error(response.status, response.statusText);
+    }
+
+    return await response.json();
+  }
+
+  async fetchRecords(dataset, filterParameters) {
+
+    const response = await fetch(
+      this.projectUrl + `/ds/${dataset}?${filterParameters}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.auth.access_token}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      error(response.status, response.statusText);
+    }
+
+    return await response.json();
+  }
+
+  async deleteRecords(dataset, filterParameters) {
+
+    const response = await fetch(
+      this.projectUrl + `/ds/${dataset}?${filterParameters}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.auth.access_token}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      error(response.status, response.statusText);
+    }
+
+    return await response.json();
   }
 }
 
